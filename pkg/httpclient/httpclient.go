@@ -15,16 +15,19 @@ type Client struct {
 }
 
 // NewHttpClient creates a new HttpClient with a given url
+// Customize the http client connection parameters,
+// in order to prevent resource leaks and improve performance
+// use a timeout of 10 seconds since public nodes are slow
 func NewHttpClient(url string) *Client {
 	return &Client{
 		client: &http.Client{
-			Timeout: 5 * time.Second,
+			Timeout: 10 * time.Second,
 			Transport: &http.Transport{
 				DialContext: (&net.Dialer{
-					Timeout: time.Second,
+					Timeout: 5 * time.Second,
 				}).DialContext,
-				TLSHandshakeTimeout:   time.Second,
-				ResponseHeaderTimeout: time.Second,
+				TLSHandshakeTimeout:   5 * time.Second,
+				ResponseHeaderTimeout: 5 * time.Second,
 			},
 		},
 		url: url,

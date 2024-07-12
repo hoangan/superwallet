@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"math/big"
+
 	m "github.com/hoangan/superwallet/internal/models"
 )
 
@@ -8,10 +10,10 @@ import (
 // Couble be extended with more services like: hot wallet withdraw, fund sweep in the case custodial wallet
 type Indexer interface {
 	// start indexer
-	Start() error
+	Start()
 
 	// last parsed block number
-	GetCurrentIndexedBlock() (int64, error)
+	GetCurrentBlock() *big.Int
 
 	// add address to observer
 	SubscribeAddress(address string) error
