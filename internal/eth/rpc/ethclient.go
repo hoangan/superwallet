@@ -23,7 +23,7 @@ func (c *EthClient) GetLatestBlock() (*RawBlock, error) {
 	// fetch the latest block
 	responseBodyBytes, err := c.client.Post(getRequestPayload("eth_getBlockByNumber", []interface{}{"latest", true}))
 	if err != nil {
-		return nil, fmt.Errorf("failed to get latest block: %v", err)
+		return nil, fmt.Errorf("failed to get latest block: %w", err)
 	}
 
 	var responseBody struct {
@@ -32,7 +32,7 @@ func (c *EthClient) GetLatestBlock() (*RawBlock, error) {
 		Id      int      `json:"id"`
 	}
 	if err := json.Unmarshal(responseBodyBytes, &responseBody); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal block response: %v", err)
+		return nil, fmt.Errorf("failed to unmarshal block response: %w", err)
 	}
 
 	return &responseBody.Block, nil
@@ -44,7 +44,7 @@ func (c *EthClient) GetBlockByNumber(blockNumber *big.Int) (*RawBlock, error) {
 	// fetch the block by number with detailed transactions
 	responseBodyBytes, err := c.client.Post(getRequestPayload("eth_getBlockByNumber", []interface{}{blockNumberHex, true}))
 	if err != nil {
-		return nil, fmt.Errorf("failed to get block by number: %v", err)
+		return nil, fmt.Errorf("failed to get block by number: %w", err)
 	}
 
 	var responseBody struct {
@@ -53,7 +53,7 @@ func (c *EthClient) GetBlockByNumber(blockNumber *big.Int) (*RawBlock, error) {
 		Id      int      `json:"id"`
 	}
 	if err := json.Unmarshal(responseBodyBytes, &responseBody); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal block response: %v", err)
+		return nil, fmt.Errorf("failed to unmarshal block response: %w", err)
 	}
 
 	return &responseBody.Block, nil
@@ -63,7 +63,7 @@ func (c *EthClient) GetTransactionByHash(txHash string) (*RawTransaction, error)
 	// fetch the transaction by hash
 	responseBodyBytes, err := c.client.Post(getRequestPayload("eth_getTransactionByHash", []interface{}{txHash}))
 	if err != nil {
-		return nil, fmt.Errorf("failed to get transaction by hash: %v", err)
+		return nil, fmt.Errorf("failed to get transaction by hash: %w", err)
 	}
 
 	var responseBody struct {
@@ -73,26 +73,13 @@ func (c *EthClient) GetTransactionByHash(txHash string) (*RawTransaction, error)
 	}
 
 	if err := json.Unmarshal(responseBodyBytes, &responseBody); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal block response: %v", err)
+		return nil, fmt.Errorf("failed to unmarshal block response: %w", err)
 	}
 
 	return &responseBody.Transaction, nil
 }
 
-// func (c *EthClient) TraceInternalTransaction(txHash string) ([]*RawTransaction, error) {
-// 	// fetch the internal transactions by transaction hash
-// 	responseBody, err := c.client.Post(getRequestPayload("trace_transaction", []inter{txHash, "[\"trace\"]"}))
-// 	if err != nil {
-// 		return nil, fmt.Errorf("failed to get internal transactions: %v", err)
-// 	}
-
-// 	internalTxs := []*RawTransaction{}
-// 	if err := json.Unmarshal(responseBody, &internalTxs); err != nil {
-// 		return nil, fmt.Errorf("failed to unmarshal internal transactions response: %v", err)
-// 	}
-
-// 	return internalTxs, nil
-// }
+// TODO: Implement function to fetch internal transactions
 
 func getRequestPayload(method string, params []interface{}) []byte {
 	payload := struct {

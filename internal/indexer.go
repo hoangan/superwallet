@@ -19,5 +19,5 @@ type Indexer interface {
 	SubscribeAddress(address string) error
 
 	// list of inbound or outbound transactions for an address
-	GetTransactions(address string) ([]m.Transaction, error)
+	GetTransactions(address string) ([]*m.Transaction, error)
 }

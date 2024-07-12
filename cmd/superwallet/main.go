@@ -12,6 +12,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/hoangan/superwallet/internal"
 	"github.com/hoangan/superwallet/internal/eth"
 	"github.com/hoangan/superwallet/internal/storage/inmemorystorage"
 )
@@ -28,6 +29,8 @@ func main() {
 }
 
 func run() error {
+	var ethIndexer internal.Indexer
+
 	// Create a context with cancellation
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -40,12 +43,12 @@ func run() error {
 
 	storage, err := inmemorystorage.New()
 	if err != nil {
-		return fmt.Errorf("failed to create storage: %v", err)
+		return fmt.Errorf("failed to create storage: %w", err)
 	}
 
-	ethIndexer, err := eth.NewIndexer(ctx, EthEndpoint, storage, big.NewInt(int64(*fromBlockNumber)))
+	ethIndexer, err = eth.NewIndexer(ctx, EthEndpoint, storage, big.NewInt(int64(*fromBlockNumber)))
 	if err != nil {
-		return fmt.Errorf("failed to create eth indexer: %v", err)
+		return fmt.Errorf("failed to create eth indexer: %w", err)
 	}
 
 	ethIndexer.Start()
@@ -81,7 +84,7 @@ func run() error {
 						continue
 					}
 					address := args[1]
-					if err := storage.SubscribeAddress(strings.ToLower(address)); err != nil {
+					if err := ethIndexer.SubscribeAddress(strings.ToLower(address)); err != nil {
 						fmt.Printf("failed to subscribe address: %v\n", err)
 					}
 					fmt.Printf("address %s subscribed\n", address)

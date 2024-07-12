@@ -16,6 +16,7 @@ import (
 const (
 	DefaultFromBlockNumber = 15537393
 	blockTime              = 15    // seconds
+	retryTime              = 10    // seconds
 	chainId                = 1     // mainnet
 	coinId                 = 1     // ethereum
 	coinTicker             = "ETH" // ethereum
@@ -68,20 +69,20 @@ func (i *EthIndexer) Start() {
 					latestRawBlock, err := i.client.GetLatestBlock()
 
 					if err != nil {
-						fmt.Printf("failed to get latest block: %v. Retry in %ds...\n", err, blockTime)
+						fmt.Printf("failed to get latest block: %v. Retry in %ds...\n", err, retryTime)
 
 						// In case of error, node is not reachable, wait for a block time before retrying
-						time.Sleep(blockTime * time.Second)
+						time.Sleep(retryTime * time.Second)
 						continue
 					}
 
 					latestBlockNumber, err := hexencoder.HexToDecimal(latestRawBlock.Number)
 					if err != nil {
-						fmt.Printf("failed to parse latest block number %s: %v. Retry in %ds...\n", latestRawBlock.Number, err, blockTime)
+						fmt.Printf("failed to parse latest block number %s: %v. Retry in %ds...\n", latestRawBlock.Number, err, retryTime)
 
 						// In case of error, wait for a block time before retrying
 						// node does return gibberish data when it is faulty sometime
-						time.Sleep(blockTime * time.Second)
+						time.Sleep(retryTime * time.Second)
 						continue
 					}
 
@@ -90,13 +91,17 @@ func (i *EthIndexer) Start() {
 
 						currentRawBlock, err := i.client.GetBlockByNumber(currentBlockNumber)
 						if err != nil {
-							fmt.Printf("failed to get block by number: %v. Retry in %ds...\n", err, blockTime)
+							fmt.Printf("failed to get block by number: %v. Retry in %ds...\n", err, retryTime)
 
 							// In case of error, wait for a block time before retrying
-							time.Sleep(blockTime * time.Second)
+							time.Sleep(retryTime * time.Second)
 							continue
 						}
 
+						// IMPROVE: use worker pool to speed up the parsing and saving of transactions
+						// for hectic network like TRON with 3s block time, txs hit ~2000 per block at peak
+						// the indexer would not be able to keep up with the network if parsing txs sequentially
+						// or in case the server to crash, the inderxer can catch up quickly when server comes back up
 						for _, rawTx := range currentRawBlock.Transactions {
 							tx, err := i.ParseTransaction(rawTx)
 							if err != nil {
@@ -111,6 +116,8 @@ func (i *EthIndexer) Start() {
 						}
 
 						i.currentIndexedBlock = currentBlockNumber
+
+						// fmt.Printf("processed block %s\n", currentBlockNumber.String())
 					}
 
 					i.ticker.Reset(blockTime * time.Second)
@@ -131,18 +138,18 @@ func (i *EthIndexer) ParseTransaction(rawTxn *rpc.RawTransaction) (*m.Transactio
 	tx.Hash = rawTxn.Hash
 
 	if tx.Type, err = hexencoder.HexToDecimal(rawTxn.Type); err != nil {
-		return nil, fmt.Errorf("failed to parse type: %v", err)
+		return nil, fmt.Errorf("failed to parse type: %w", err)
 	}
 
 	if tx.BlockNumber, err = hexencoder.HexToDecimal(rawTxn.BlockNumber); err != nil {
-		return nil, fmt.Errorf("failed to parse block number: %v", err)
+		return nil, fmt.Errorf("failed to parse block number: %w", err)
 	}
 	tx.BlockHash = rawTxn.BlockHash
 	tx.From = rawTxn.From
 	tx.To = rawTxn.To
 
 	if tx.Value, err = hexencoder.HexToDecimal(rawTxn.Value); err != nil {
-		return nil, fmt.Errorf("failed to parse value: %v", err)
+		return nil, fmt.Errorf("failed to parse value: %w", err)
 	}
 
 	// In the case of contract call, the value is 0
@@ -164,19 +171,18 @@ func (i *EthIndexer) ParseTransaction(rawTxn *rpc.RawTransaction) (*m.Transactio
 		// default chain id to mainnet for now
 		// legacy transactions do not have this field
 		tx.ChainId = big.NewInt(chainId)
-		// return nil, fmt.Errorf("failed to parse chain id: %v\n %+v", err, rawTxn)
 	}
 
 	if tx.Nonce, err = hexencoder.HexToDecimal(rawTxn.Nonce); err != nil {
-		return nil, fmt.Errorf("failed to parse nonce: %v", err)
+		return nil, fmt.Errorf("failed to parse nonce: %w", err)
 	}
 
 	if tx.Gas, err = hexencoder.HexToDecimal(rawTxn.Gas); err != nil {
-		return nil, fmt.Errorf("failed to parse gas: %v", err)
+		return nil, fmt.Errorf("failed to parse gas: %w", err)
 	}
 
 	if tx.GasPrice, err = hexencoder.HexToDecimal(rawTxn.GasPrice); err != nil {
-		return nil, fmt.Errorf("failed to parse gas price: %v", err)
+		return nil, fmt.Errorf("failed to parse gas price: %w", err)
 	}
 
 	tx.Transfers = transfers
@@ -203,6 +209,10 @@ func (i *EthIndexer) SaveSubscibedAddressTransaction(tx *m.Transaction) error {
 				fmt.Printf("saved transaction for subscribed address: %s hash: %s\n", transfer.To, tx.Hash)
 			}
 		}
+
+		// call webhook to notify transaction of the subscribed address here
+		// create a message, send to the the notification queue, call the webhook
+
 	}
 
 	return nil
@@ -214,6 +224,10 @@ func (i *EthIndexer) GetCurrentBlock() *big.Int {
 
 func (i *EthIndexer) GetTransactions(address string) ([]*m.Transaction, error) {
 	return i.storage.GetTransactionsByAddress(address)
+}
+
+func (i *EthIndexer) SubscribeAddress(address string) error {
+	return i.storage.SubscribeAddress(address)
 }
 
 func (i *EthIndexer) Stop() {

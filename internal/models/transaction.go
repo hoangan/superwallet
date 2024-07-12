@@ -3,8 +3,9 @@ package models
 import "math/big"
 
 type Transfer struct {
-	// Unique cointID in the system
-	// Different coins within the same chain
+	// Unique cointID across the system
+	// Simplify the complication of different coins within the same chain,
+	// and same coin across different chains
 	CoinID int64    `json:"coinId"`
 	Ticker string   `json:"ticker"`
 	From   string   `json:"from"`
@@ -29,5 +30,6 @@ type Transaction struct {
 
 	// Batch transfers of coins in single transaction
 	// Any values transferred recorded here
+	// In the case of contract call without value transfer, the value is 0
 	Transfers []*Transfer `json:"transfers"`
 }
