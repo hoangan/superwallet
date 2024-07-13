@@ -30,7 +30,7 @@ Usage:
 		Get the current indexed block number
 
 	\q  
-		Quit the indexer`
+		Quit the indexer
 ```
 
 ## Testing
