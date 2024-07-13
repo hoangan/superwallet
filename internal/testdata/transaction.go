@@ -16,12 +16,16 @@ var (
 		Nonce:       big.NewInt(0),
 		Gas:         big.NewInt(21000),
 		GasPrice:    big.NewInt(1000000000),
+		From:        "0x4838b106fce9647bdf1e7877bf73ce8b0bad5f97",
+		To:          "0x29182006a4967e9a50c0a66076da514993d3b4d4",
+		Value:       big.NewInt(46593927161255104),
 		Transfers: []*m.Transfer{
 			{
 				CoinID: 1,
 				Ticker: "ETH",
-				From:   "0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97",
+				From:   "0x4838b106fce9647bdf1e7877bf73ce8b0bad5f97",
 				To:     "0x29182006a4967e9a50c0a66076da514993d3b4d4",
+				Value:  big.NewInt(46593927161255104),
 			},
 		},
 	}

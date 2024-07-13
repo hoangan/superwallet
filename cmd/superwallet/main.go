@@ -18,7 +18,22 @@ import (
 )
 
 const (
-	EthEndpoint = "https://cloudflare-eth.com"
+	// EthEndpoint = "https://cloudflare-eth.com"
+	EthEndpoint = "https://mainnet.infura.io/v3/8c6018cfa4e447dc8ae36eda6719071d"
+
+	usage = ` 
+Usage:
+	\s address
+		Subscribe an address to watch for transactions
+
+	\a address
+		Get all transactions for an address
+
+	\b 
+		Get the current indexed block number
+
+	\q  
+		Quit the indexer`
 )
 
 func main() {
@@ -54,6 +69,8 @@ func run() error {
 	ethIndexer.Start()
 
 	fmt.Printf("Indexer started...\n")
+
+	fmt.Printf("%s\n", usage)
 
 	reader := bufio.NewReader(os.Stdin)
 

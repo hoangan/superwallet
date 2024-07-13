@@ -14,7 +14,7 @@ func TestInMemoryStorage(t *testing.T) {
 	t.Run("Subscribe Address", func(t *testing.T) {
 		err := storage.SubscribeAddress(address)
 		if err != nil {
-			t.Errorf("failed to subscribe address: %w", err)
+			t.Errorf("failed to subscribe address: %v", err)
 		}
 
 		if !storage.IsSubscribedAddress(address) {
@@ -25,7 +25,7 @@ func TestInMemoryStorage(t *testing.T) {
 	t.Run("Add Address Transaction", func(t *testing.T) {
 		err := storage.AddAddressTransaction(address, testdata.Transaction1)
 		if err != nil {
-			t.Errorf("failed to add address transaction: %w", err)
+			t.Errorf("failed to add address transaction: %v", err)
 		}
 
 	})
@@ -33,7 +33,7 @@ func TestInMemoryStorage(t *testing.T) {
 	t.Run("Get Transactions By Address", func(t *testing.T) {
 		transactions, err := storage.GetTransactionsByAddress(address)
 		if err != nil {
-			t.Errorf("failed to get transactions by address: %w", err)
+			t.Errorf("failed to get transactions by address: %v", err)
 		}
 
 		if len(transactions) != 1 {

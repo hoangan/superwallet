@@ -232,7 +232,5 @@ func (i *EthIndexer) SubscribeAddress(address string) error {
 
 func (i *EthIndexer) Stop() {
 	i.ticker.Stop()
-
-	// wait for the indexer to finish processing the current block
 	i.wg.Wait()
 }
