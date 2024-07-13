@@ -42,6 +42,6 @@ go test -v ./internal/storage/inmemorystorage/inmomerystorage_test.go
 go test ./...
 ```
 
-## Further Improment
+## Further Improvement
 - Internal transaction indexing.
 - Speed up indexing using worker pool for busy network like TRON.
