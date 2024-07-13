@@ -42,6 +42,12 @@ go test -v ./internal/storage/inmemorystorage/inmomerystorage_test.go
 go test ./...
 ```
 
+## Debugging
+Uncomment this line of code in `ethindexer.go` to see the parsing process. 
+```shell
+// fmt.Printf("processed block %s\n", currentBlockNumber.String())
+```
+
 ## Further Improvement
 - Internal transaction indexing.
 - Speed up indexing using worker pool for busy network like TRON.
