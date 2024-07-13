@@ -9,3 +9,35 @@ Index blockchain transaction, currently support only Ethereum chain. More chains
 - **Storage**: `storage.go` define interface for database operations. Help us to easily switch to any database if we want to, by just implementing the storage interface. 
 - **InMemoryStorage**: `inmemorystorage.go` implements the storage interface, interact with the simple `InMemoryDatabase`.
 - **InMemoryDatabase**: `inmemorydatabase.go` simple key-value store in memory.  
+- **EthClient** `ethclient.go` implement functionalities to interact with ETH blockchain node. 
+- **HttpClient** `httpclient.go` wrapper around the default standard http client to add some optimization. 
+
+## Run it
+```shell
+go run ./cmd/superwallet/main.go -from-block <block-number>
+```
+
+## Command line usage
+```shell
+Usage:
+	\s address
+		Subscribe an address to watch for transactions
+
+	\a address
+		Get all transactions for an address
+
+	\b 
+		Get the current indexed block number
+
+	\q  
+		Quit the indexer`
+```
+
+## Testing
+```shell
+go test -v ./internal/eth/ethindexer_test.go
+
+go test -v ./internal/storage/inmemorystorage/inmomerystorage_test.go
+
+go test ./...
+```
